@@ -22,6 +22,7 @@ def register_modules(registry):
         deps = [
             # do not sort
             "//{}/oplus/kernel/charger/bazel:{{target_variant}}_oplus_chg_v2".format(SOC_MODULES_REPO_PATH),
+            "//{}/oplus/kernel/vibrator/bazel:oplus_bsp_haptic_feedback".format(SOC_MODULES_REPO_PATH),
             "drivers/soc/qcom/panel_event_notifier",
             "drivers/soc/qcom/qti_pmic_glink",
             "drivers/soc/qcom/pdr_interface",
@@ -44,6 +45,7 @@ def register_modules(registry):
             "drivers/virt/gunyah/gh_dbl",
             "arch/arm64/gunyah/gh_arm_drv",
         ],
+        local_defines = ["CONFIG_HAPTIC_FEEDBACK_MODULE"],
     )
     registry.register(
         name = "drivers/input/misc/qpnp-power-on",
