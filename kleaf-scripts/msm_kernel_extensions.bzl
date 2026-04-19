@@ -37,7 +37,7 @@ def get_custom_dtbo_img_list(target):
     return _get_custom_dtbo_img_list(target)
 
 def get_dtstree(target):
-    return "//soc-repo/arch/arm64/boot/dts/vendor:msm_dt"
+    return "//{}/arch/arm64/boot/dts/vendor:msm_dt".format(native.package_name())
 
 def get_vendor_ramdisk_binaries(target, flavor = None):
     return None
