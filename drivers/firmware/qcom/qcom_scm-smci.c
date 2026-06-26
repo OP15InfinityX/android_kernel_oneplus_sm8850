@@ -490,3 +490,4 @@ module_platform_driver(qcom_scm_smcinvoke_driver);
 
 MODULE_DESCRIPTION("Qualcomm SCM SMCInvoke driver");
 MODULE_LICENSE("GPL");
+
