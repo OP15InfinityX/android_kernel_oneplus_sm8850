@@ -1,5 +1,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
-load("//vendor/oneplus/sm8850-devicetrees:qcom/platform_map.bzl", _get_custom_dtbo_img_list = "get_custom_dtbo_img_list", _get_dtb_list = "get_dtb_list", _get_dtbo_list = "get_dtbo_list")
+#load("//vendor/oneplus/sm8850-devicetrees:qcom/platform_map.bzl", _get_custom_dtbo_img_list = "get_custom_dtbo_img_list", _get_dtb_list = "get_dtb_list", _get_dtbo_list = "get_dtbo_list")
+#oplus devicetree overylay use oplus dir
+load("//vendor/oneplus/sm8850-devicetrees:oplus/platform_map.bzl", _get_custom_dtbo_img_list = "get_custom_dtbo_img_list", _get_dtb_list = "get_dtb_list", _get_dtbo_list = "get_dtbo_list")
 
 def define_top_level_rules():
     for skippable in ["abl", "dtc", "abi"]:
