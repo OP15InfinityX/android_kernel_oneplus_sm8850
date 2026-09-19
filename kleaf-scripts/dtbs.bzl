@@ -1,9 +1,20 @@
-load(":soc_repo_path.bzl", "SOC_REPO_PATH")
+load(":soc_repo_path.bzl", "SOC_MODULES_REPO_PATH", "SOC_REPO_PATH")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load(":kleaf-scripts/msm_kernel_extensions.bzl", "get_custom_dtbo_img_list", "get_dtb_list", "get_dtbo_list", "get_dtstree")
+load("//build/kernel/kleaf:hermetic_tools.bzl", "hermetic_genrule")
 load("//build/kernel/kleaf:kernel.bzl", "kernel_build", "kernel_build_config")
 
 def define_qcom_dtb_setup():
+    hermetic_genrule(
+        name = "kconfig.dtb.generated",
+        srcs = [
+            ":kconfig.msm.generated",
+            "//" + SOC_MODULES_REPO_PATH + "/oplus/kernel/charger/bazel:kconfig.oplus_chg.generated",
+        ],
+        outs = ["dtb/Kconfig.ext"],
+        cmd = "cat $(SRCS) >$@",
+    )
+
     write_file(
         name = "dtb_build_config",
         out = "build.config.qcom.dtbs",
@@ -78,7 +89,7 @@ def define_qcom_dtbs(
         dtstree = get_dtstree(target),
         outs = dtb_list + dtbo_list + ["vmlinux", "Module.symvers", "Image", "System.map", ".config"],
         base_kernel = ":{}_base_kernel".format(stem),
-        kconfig_ext = ":kconfig.msm.generated",
+        kconfig_ext = ":kconfig.dtb.generated",
         makefile = "//common:Makefile",
         defconfig = defconfig,
         post_defconfig_fragments = [
