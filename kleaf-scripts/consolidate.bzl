@@ -1,4 +1,3 @@
-load("//build/bazel_common_rules/dist:dist.bzl", "copy_to_dist_dir")
 load("//build/kernel/kleaf:constants.bzl", "aarch64_outs")
 load(
     "//build/kernel/kleaf:kernel.bzl",
@@ -10,6 +9,8 @@ load(
     "kernel_unstripped_modules_archive",
 )
 load("//common:modules.bzl", "get_gki_modules_list", "get_kunit_modules_list")
+load("@rules_pkg//pkg:install.bzl", "pkg_install")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 
 def define_consolidated_kernel(
         name = "kernel_aarch64_consolidate",
@@ -154,12 +155,17 @@ def define_consolidated_kernel(
         Label("//build/kernel:init_ddk_zip"),
     ]
 
-    copy_to_dist_dir(
+    pkg_files(
+        name = name + "_dist" + "_files",
+        srcs = dist_targets,
+        visibility = ["//visibility:private"],
+        strip_prefix = strip_prefix.files_only(),
+    )
+
+    pkg_install(
         name = name + "_dist",
-        data = dist_targets,
-        flat = True,
-        dist_dir = "out/{name}/dist".format(name = name),
-        log = "info",
+        srcs = [":" + name + "_dist" + "_files"],
+        destdir = "out/{name}/dist".format(name = name),
     )
 
     kernel_compile_commands(

@@ -4,13 +4,14 @@ load(
     "get_dtb_list",
     "get_dtbo_list",
 )
-load("//build/bazel_common_rules/dist:dist.bzl", "copy_to_dist_dir")
 load("//build/kernel/kleaf:hermetic_tools.bzl", "hermetic_genrule")
 load("//build/kernel/kleaf:kernel.bzl", "ddk_headers", "merged_kernel_uapi_headers")
 load(":kleaf-scripts/dtbs.bzl", "define_qcom_dtbs")
 load(":kleaf-scripts/image_opts.bzl", "vm_image_opts")
 load(":kleaf-scripts/msm_dtc.bzl", "define_dtc_dist")
 load(":qcom_modules.bzl", "registry")
+load("@rules_pkg//pkg:install.bzl", "pkg_install")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 
 def define_make_vm_dtb_img(target, dtb_list, page_size):
     compiled_dtbs = [":{}_dtb_build/{}".format(target, t) for t in dtb_list]
@@ -30,25 +31,35 @@ def define_make_vm_dtb_img(target, dtb_list, page_size):
         cmd = dtb_cmd,
     )
 
-    copy_to_dist_dir(
-        name = "{}_vm_dist".format(target),
-        data = [
+    pkg_files(
+        name = "{}_vm_dist_files".format(target),
+        srcs = [
             "{}-dtb.img".format(target),
         ] + compiled_dtbs,
-        dist_dir = "out/msm-kernel-{}/dist".format(target),
-        flat = True,
-        log = "info",
+        visibility = ["//visibility:private"],
+        strip_prefix = strip_prefix.files_only(),
+    )
+
+    pkg_install(
+        name = "{}_vm_dist".format(target),
+        srcs = [":{}_vm_dist_files".format(target)],
+        destdir = "out/msm-kernel-{}/dist".format(target),
     )
 
 def define_make_vm_dtbo_img(target, dtbo_list):
     compiled_dtbos = [":{}_dtb_build/{}".format(target, t) for t in dtbo_list]
 
-    copy_to_dist_dir(
+    pkg_files(
+        name = "{}_vm_dtbo_dist_files".format(target),
+        srcs = compiled_dtbos,
+        visibility = ["//visibility:private"],
+        strip_prefix = strip_prefix.files_only(),
+    )
+
+    pkg_install(
         name = "{}_vm_dtbo_dist".format(target),
-        data = compiled_dtbos,
-        dist_dir = "out/msm-kernel-{}/dist".format(target),
-        flat = True,
-        log = "info",
+        srcs = [":{}_vm_dtbo_dist_files".format(target)],
+        destdir = "out/msm-kernel-{}/dist".format(target),
     )
 
 def define_single_autogvmlv_build(
@@ -99,20 +110,25 @@ def define_single_autogvmlv_build(
         kernel_build = base_kernel,
     )
 
-    copy_to_dist_dir(
-        name = "{}_host_dist".format(name),
-        data = [
+    pkg_files(
+        name = "{}_host_dist_files".format(name),
+        srcs = [
             ":gen-headers_install.sh",
             ":unifdef",
         ],
-        dist_dir = "out/msm-kernel-{}/host".format(name),
-        flat = True,
-        log = "info",
+        visibility = ["//visibility:private"],
+        strip_prefix = strip_prefix.files_only(),
     )
 
-    copy_to_dist_dir(
-        name = "{}_dist".format(name),
-        data = [
+    pkg_install(
+        name = "{}_host_dist".format(name),
+        srcs = [":{}_host_dist_files".format(name)],
+        destdir = "out/msm-kernel-{}/host".format(name),
+    )
+
+    pkg_files(
+        name = "{}_dist_files".format(name),
+        srcs = [
             ":{}_modules_install".format(name),
             #":{}_signed_modules".format(name),
             ":{}_merge_msm_uapi_headers".format(name),
@@ -121,10 +137,14 @@ def define_single_autogvmlv_build(
             base_kernel,
             ":{}_dtb_build/.config".format(name),
         ],
-        dist_dir = "out/msm-kernel-{}/dist".format(name),
-        flat = True,
-        allow_duplicate_filenames = True,
-        log = "info",
+        visibility = ["//visibility:private"],
+        strip_prefix = strip_prefix.files_only(),
+    )
+
+    pkg_install(
+        name = "{}_dist".format(name),
+        srcs = [":{}_dist_files".format(name)],
+        destdir = "out/msm-kernel-{}/dist".format(name),
     )
 
 def define_autogvmlv_build(

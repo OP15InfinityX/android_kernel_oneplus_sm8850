@@ -1,6 +1,5 @@
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load(":kleaf-scripts/msm_kernel_extensions.bzl", "define_extras", "get_vendor_ramdisk_binaries")
-load("//build/bazel_common_rules/dist:dist.bzl", "copy_to_dist_dir")
 load("//build/kernel/kleaf:hermetic_tools.bzl", "hermetic_genrule")
 load(
     "//build/kernel/kleaf:kernel.bzl",
@@ -13,6 +12,8 @@ load(":kleaf-scripts/abl.bzl", "define_abl_dist")
 load(":kleaf-scripts/generic_le.bzl", "define_le", "define_qcom_le")
 load(":kleaf-scripts/msm_dtc.bzl", "define_dtc_dist")
 load(":qcom_modules.bzl", "registry")
+load("@rules_pkg//pkg:install.bzl", "pkg_install")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 
 def define_common_le_rules():
     write_file(
@@ -189,23 +190,17 @@ def define_single_le_build(
         if board_bc_extras:
             dist_data.append("{}_extra_bootconfig".format(stem))
 
-    copy_to_dist_dir(
+    pkg_files(
+        name = "{}_dist_files".format(stem),
+        srcs = dist_data,
+        visibility = ["//visibility:private"],
+        strip_prefix = strip_prefix.files_only(),
+    )
+
+    pkg_install(
         name = "{}_dist".format(stem),
-        data = dist_data,
-        dist_dir = "out/msm-kernel-{}-{}/dist".format(name, variant),
-        flat = True,
-        log = "info",
-        allow_duplicate_filenames = True,
-        mode_overrides = {
-            # do not sort
-            "**/*.elf": "755",
-            "**/vmlinux": "755",
-            "**/Image": "755",
-            "**/*.dtb*": "755",
-            "**/LinuxLoader*": "755",
-            "**/sign-file": "755",
-            "**/*": "644",
-        },
+        srcs = [":{}_dist_files".format(stem)],
+        destdir = "out/msm-kernel-{}-{}/dist".format(name, variant),
     )
 
     define_abl_dist(stem, name, variant)
