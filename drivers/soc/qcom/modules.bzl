@@ -1600,7 +1600,7 @@ def register_modules(registry):
             "drivers/virt/gunyah/gh_dbl",
             "arch/arm64/gunyah/gh_arm_drv",
             #OPLUS_FEATURE_CHG_BASIC
-            "//" + SOC_MODULES_REPO_PATH + "/oplus/kernel/charger/bazel:{target_variant}_oplus_chg_v2",
+            "//{}/oplus/kernel/charger/bazel:{{target_variant}}_oplus_chg_v2".format(SOC_MODULES_REPO_PATH),
             #OPLUS_FEATURE_CHG_BASIC end
             # Add for oplus mm feedback, CONFIG_OPLUS_FEATURE_MM_FEEDBACK
             "//{}/oplus/kernel/multimedia/feedback/bazel:oplus_mm_kevent_fb".format(SOC_MODULES_REPO_PATH),

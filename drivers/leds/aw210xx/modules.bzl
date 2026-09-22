@@ -16,6 +16,6 @@ def register_modules(registry):
             "drivers/leds/aw210xx/leds_aw210xx_reg.h",
         ],
         deps = [
-            "//" + SOC_MODULES_REPO_PATH + "/oplus/kernel/boot:oplus_bsp_bootmode",
+            "//{}/oplus/kernel/boot:oplus_bsp_bootmode".format(SOC_MODULES_REPO_PATH),
         ],
     )
