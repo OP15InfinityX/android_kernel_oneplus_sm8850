@@ -2401,7 +2401,10 @@ static void handle_uaudio_stream_req(struct qmi_handle *handle,
 			info->sync_ep_pipe = 0;
 		}
 
-		if (uadev[pcm_card_num].offload_data.active == 0) {
+		if (uaudio_qdev->intr_num) {
+			/* Secondary interrupters stop only the requested stream. */
+			disable_audio_stream(subs);
+		} else if (uadev[pcm_card_num].offload_data.active == 0) {
 			if (!uaudio_qdev->in_disconnect) {
 				uaudio_qdev->disable_stream_card_num = pcm_card_num;
 				uaudio_qdev->disable_stream_queued = true;
@@ -2431,7 +2434,7 @@ response:
 		}
 		if (atomic_dec_and_test(&uadev[pcm_card_num].in_use)) {
 			wake_up(&uadev[pcm_card_num].disconnect_wq);
-			if (!uaudio_qdev->sw_evt_ring_freed)
+			if (uaudio_qdev->intr_num || !uaudio_qdev->sw_evt_ring_freed)
 				uaudio_dev_release(&uadev[pcm_card_num]);
 		}
 		mutex_unlock(&chip->mutex);
